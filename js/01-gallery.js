@@ -3,9 +3,7 @@ import { galleryItems } from './gallery-items.js';
 
 console.log(galleryItems);
 
-let galleryEl = document.querySelector('.gallery');
-  console.log(galleryEl)
-
+let listEl = document.querySelector('.gallery');
 
 function createGalleryElement(items) {
 
@@ -24,39 +22,41 @@ function createGalleryElement(items) {
       imgEl.dataset.source = item.original;
       imgEl.alt = item.description;
       linkEl.appendChild(imgEl);
-      
 
       return itemEl;
   });
 
-  galleryEl.append(...galleryElements);
+  listEl.append(...galleryElements);
 
-  return galleryEl;
+  return listEl;
 }
 
-function onGalleryItemClick(event) {
-  let clickedItemEl = event.target.closest('.gallery-item');
-  if (!clickedItemEl) {
-      return;
+createGalleryElement(galleryItems);
+
+listEl.addEventListener('click', onImgClick);
+
+function onImgClick(event) {
+  event.preventDefault();
+
+  const { target } = event;
+
+  if (!target.classList.contains('gallery__image')) {
+    return;
   }
-  let {url, description} = clickedItemEl.dataset;
-  openModal(url, description);
+
+  const instance = basicLightbox.create(`
+    <img
+      src="${target.dataset.source}"
+    />
+  `, {
+    onShow: (instance) => {
+      instance.element().querySelector('img').onclick = instance.close
+    }
+  });
+
+  instance.show()
 }
 
-function bindEvents(galleryEl) {
-  galleryEl.addEventListener('click', onGalleryItemClick);
-}
 
-function initGallery(items) {
-  let galleryEl = createGalleryElement(items);
-  bindEvents(galleryEl);
-}
 
-initGallery(galleryItems);
 
-galleryEl.addEventListener('click', (event) => {
-  //let targetEl = event.target;
-  // if ('closeModal' in targetEl.dataset) {
-  //     closeModal();
-  // }
-});
