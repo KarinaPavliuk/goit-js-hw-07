@@ -3,60 +3,61 @@ import { galleryItems } from './gallery-items.js';
 
 console.log(galleryItems);
 
-let listEl = document.querySelector('.gallery');
+const listEl = document.querySelector('.gallery');
+const galleryMarkup = createGalleryElement(galleryItems);
+listEl.insertAdjacentHTML('beforeend', galleryMarkup);
+listEl.addEventListener('click', onImgClick);
 
 function createGalleryElement(items) {
-
-  let galleryElements = items.map(item => {
-      let itemEl = document.createElement('li');
-      itemEl.classList.add('gallery__item');
-
-      let linkEl = document.createElement('a');
-      linkEl.classList.add('gallery__link');
-      linkEl.href = item.original;
-      itemEl.appendChild(linkEl);
-      
-      let imgEl = document.createElement('img');
-      imgEl.classList.add('gallery__image');
-      imgEl.src = item.preview;
-      imgEl.dataset.source = item.original;
-      imgEl.alt = item.description;
-      linkEl.appendChild(imgEl);
-
-      return itemEl;
-  });
-
-  listEl.append(...galleryElements);
-
-  return listEl;
+  return items
+    .map(({ preview, original, description }) => {
+    return `<li class="gallery__item">
+              <a class="gallery__link" href="${original}">
+                <img
+                  class="gallery__image"
+                  src="${preview}"
+                  data-source="${original}"
+                  alt="${description}"
+                />
+              </a>
+            </li>`
+  })
+  .join('');
 }
 
-createGalleryElement(galleryItems);
 
-listEl.addEventListener('click', onImgClick);
+  
 
 function onImgClick(event) {
   event.preventDefault();
 
   const { target } = event;
-
-  if (!target.classList.contains('gallery__image')) {
+  if (!target.nodeName === 'IMG') {
     return;
   }
-
-  const instance = basicLightbox.create(`
-    <img
-      src="${target.dataset.source}"
-    />
-  `, {
-    onShow: (instance) => {
-      instance.element().querySelector('img').onclick = instance.close
+    const instance = basicLightbox.create(`
+      <img
+        src="${target.dataset.source}"
+      />
+    `
+    , {
+          onShow: (instance) => {
+            window.addEventListener('keydown', onEscKeyPress);
+          },
+          onClose: (instance) => {
+            window.removeEventListener('keydown', onEscKeyPress);
+          },
     }
-  });
-
+    );
   instance.show()
+  
+  
 }
 
+function onEscKeyPress(e) {
+  if (e.code !== "Escape") return;
+  instance.close();
+}
 
 
 
